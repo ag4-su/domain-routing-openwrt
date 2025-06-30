@@ -636,12 +636,12 @@ EOF
 cat << 'EOF' >> /etc/init.d/getdomains
     count=0
     while true; do
-        if wget -q --spider -T 3 github.com; then
-            wget -qO /tmp/dnsmasq.d/domains.lst $DOMAINS
+        if wget -qO /tmp/dnsmasq.d/domains.lst $DOMAINS; then
             break
         else
-            echo "GitHub is not available. Check the internet availability [$count]"
+            echo "GitHub is not available or download failed. Check the internet availability [$count]"
             count=$((count+1))
+            sleep 5
         fi
     done
 
