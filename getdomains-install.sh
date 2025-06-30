@@ -575,24 +575,6 @@ add_dns_resolver() {
     fi
 }
 
-add_packages() {
-    for package in curl; do
-        if opkg list-installed | grep -q "^$package "; then
-            printf "\033[32;1m$package already installed\033[0m\n"
-        else
-            printf "\033[32;1mInstalling $package...\033[0m\n"
-            opkg install "$package"
-            
-            if "$package" --version >/dev/null 2>&1; then
-                printf "\033[32;1m$package was successfully installed and available\033[0m\n"
-            else
-                printf "\033[31;1mError: failed to install $package\033[0m\n"
-                exit 1
-            fi
-        fi
-    done
-}
-
 add_getdomains() {
     echo "Choose you country"
     echo "Select:"
@@ -654,8 +636,8 @@ EOF
 cat << 'EOF' >> /etc/init.d/getdomains
     count=0
     while true; do
-        if curl -m 3 github.com; then
-            curl -f $DOMAINS --output /tmp/dnsmasq.d/domains.lst
+        if wget -q --spider --tries=1 --timeout=3 github.com; then
+            wget -qO /tmp/dnsmasq.d/domains.lst $DOMAINS
             break
         else
             echo "GitHub is not available. Check the internet availability [$count]"
@@ -894,7 +876,7 @@ install_awg_packages() {
     else
         AMNEZIAWG_TOOLS_FILENAME="amneziawg-tools${PKGPOSTFIX}"
         DOWNLOAD_URL="${BASE_URL}v${VERSION}/${AMNEZIAWG_TOOLS_FILENAME}"
-        curl -L -o "$AWG_DIR/$AMNEZIAWG_TOOLS_FILENAME" "$DOWNLOAD_URL"
+        wget -qO "$AWG_DIR/$AMNEZIAWG_TOOLS_FILENAME" "$DOWNLOAD_URL"
 
         if [ $? -eq 0 ]; then
             echo "amneziawg-tools file downloaded successfully"
@@ -918,7 +900,7 @@ install_awg_packages() {
     else
         KMOD_AMNEZIAWG_FILENAME="kmod-amneziawg${PKGPOSTFIX}"
         DOWNLOAD_URL="${BASE_URL}v${VERSION}/${KMOD_AMNEZIAWG_FILENAME}"
-        curl -L -o "$AWG_DIR/$KMOD_AMNEZIAWG_FILENAME" "$DOWNLOAD_URL"
+        wget -qO "$AWG_DIR/$KMOD_AMNEZIAWG_FILENAME" "$DOWNLOAD_URL"
 
         if [ $? -eq 0 ]; then
             echo "kmod-amneziawg file downloaded successfully"
@@ -942,7 +924,7 @@ install_awg_packages() {
     else
         LUCI_APP_AMNEZIAWG_FILENAME="luci-app-amneziawg${PKGPOSTFIX}"
         DOWNLOAD_URL="${BASE_URL}v${VERSION}/${LUCI_APP_AMNEZIAWG_FILENAME}"
-        curl -L -o "$AWG_DIR/$LUCI_APP_AMNEZIAWG_FILENAME" "$DOWNLOAD_URL"
+        wget -qO "$AWG_DIR/$LUCI_APP_AMNEZIAWG_FILENAME" "$DOWNLOAD_URL"
 
         if [ $? -eq 0 ]; then
             echo "luci-app-amneziawg file downloaded successfully"
@@ -983,8 +965,6 @@ fi
 printf "\033[31;1mAll actions performed here cannot be rolled back automatically.\033[0m\n"
 
 check_repo
-
-add_packages
 
 add_tunnel
 
